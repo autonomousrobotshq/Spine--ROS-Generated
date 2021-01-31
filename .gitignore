@@ -881,6 +881,7 @@ Gemfile.lock
 obj
 bin
 build
+devel
 
 *.bin
 *.out
