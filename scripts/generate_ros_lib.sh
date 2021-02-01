@@ -35,11 +35,11 @@ cd $TMP_DIR && echo "Temporary folder @ $(pwd)" || exit 1
 
 # clone ROS packages
 git clone $GIT_REPO $GIT_REPO_NAME || exit 1
-cd $GIT_REPO_NAME && git submodule update --init --recursive && cd $TMP_DIR || exit 1
+pushd . && cd $GIT_REPO_NAME && git submodule update --init --recursive && popd || exit 1
 
 # initialize workspace
-mkdir src && cd src && catkin_init_workspace && cd .. || exit 1
-mv $GIT_REPO_NAME ./src || exit 1
+pushd . && mkdir src && cd src && catkin_init_workspace && cd .. || exit 1
+mv $GIT_REPO_NAME ./src && popd || exit 1
 
 # build and generate ROS headers
 catkin_make && source ./devel/setup.zsh && rosrun rosserial_arduino make_libraries.py .  || exit 1
@@ -55,21 +55,17 @@ rm -rf $ROSLIB_DST_DIR/../examples && mv $ROSLIB_DST_DIR/examples $ROSLIB_DST_DI
 # patches
 find $ROSLIB_DST_DIR \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/cstring/string\.h/g' || exit 1
 find $ROSLIB_DST_DIR \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/std::memcpy/memcpy/g' || exit 1
-find $ROSLIB_DST_DIR/../examples/ -name "*.pde" -exec sh -c 'mv "$1" "${1%.pde}.ino"' _ {} \; # rename .pde -> .ino
+find $ROSLIB_DST_DIR/../examples/ -name "*.pde" -exec sh -c 'mv "$1" "${1%.pde}.ino"' _ {} \; &>/dev/null # rename .pde -> .ino
 
-# remove bad tests (they cannot be compiled with just ROSSerial or are formatted badly)
-wd=$(pwd)
-cd $ROSLIB_DST_DIR/../examples
+# remove bad tests (they cannot be compiled with just ROSSerial or are outdated)
+cd $ROSLIB_DST_DIR/../examples || exit 1
 BADEXAMPLES=(
-				"ADC/ADC.ino" \
 				"TimeTF/TimeTF.ino" \
-				"ServiceServer/ServiceServer.ino" \
 				"ServiceClient/ServiceClient.ino" \
 				"Odom/Odom.ino" \
 				"Esp8266HelloWorld/Esp8266HelloWorld.ino" \
 			)
 for ino in "${BADEXAMPLES[@]}"; do rm $ino; done
-cd $wd
 
 # add includes to library.properties
 sed -i '/includes=/d' $LIB_PROPERTIES
