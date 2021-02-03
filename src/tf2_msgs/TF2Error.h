@@ -2,7 +2,11 @@
 #define _ROS_tf2_msgs_TF2Error_h
 
 #include <stdint.h>
-#include <string.h>
+#ifdef __MACH__
+	#include "String.h"
+#else
+	#include "string.h"
+#endif
 #include <stdlib.h>
 #include "ros/msg.h"
 

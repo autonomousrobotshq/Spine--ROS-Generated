@@ -2,7 +2,11 @@
 #define _ROS_diagnostic_msgs_DiagnosticStatus_h
 
 #include <stdint.h>
-#include <string.h>
+#ifdef __MACH__
+	#include "String.h"
+#else
+	#include "string.h"
+#endif
 #include <stdlib.h>
 #include "ros/msg.h"
 #include "diagnostic_msgs/KeyValue.h"

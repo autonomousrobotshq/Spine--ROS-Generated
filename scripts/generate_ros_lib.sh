@@ -23,12 +23,13 @@ BASEDIR=$(realpath $(dirname "$0"))
 
 ROSLIB_DST_DIR=$BASEDIR/../src
 LIB_PROPERTIES=$BASEDIR/../library.properties
-GIT_REPO="git@github.com:autonomousrobotshq/ros_packages.git"
+GIT_REPO="git@github.com:autonomousrobotshq/Spine--ROS-Messages"
 GIT_REPO_NAME="ros_packages"
 
 which catkin_make || { echo "Don't forget to source setup.zsh or setup.bash first!"; exit 1; }
 which cmake || exit 1
 which git || exit 1
+which mktemp || exit 1
 
 TMP_DIR=`mktemp -d`
 cd $TMP_DIR && echo "Temporary folder @ $(pwd)" || exit 1
@@ -57,7 +58,19 @@ find $ROSLIB_DST_DIR \( -type d -name .git -prune \) -o -type f -print0 | xargs 
 find $ROSLIB_DST_DIR \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/std::memcpy/memcpy/g' || exit 1
 find $ROSLIB_DST_DIR/../examples/ -name "*.pde" -exec sh -c 'mv "$1" "${1%.pde}.ino"' _ {} \; &>/dev/null # rename .pde -> .ino
 
-# remove bad tests (they cannot be compiled with just ROSSerial or are outdated)
+# OSx expects String.h instead of string.h ...........
+tmp_f=`mktemp`
+cat>$tmp_f<<EOF
+#ifdef __MACH__
+	#include "String.h"
+#else
+	#include "string.h"
+#endif
+EOF
+find $ROSLIB_DST_DIR -exec sed -i -e "/#include <string\.h>/{r$tmp_f" -e "d}" {} \;
+rm $tmp_f
+
+# remove bad examples (they cannot be compiled with just ROSSerial or are outdated)
 cd $ROSLIB_DST_DIR/../examples || exit 1
 BADEXAMPLES=(
 				"TimeTF/TimeTF.ino" \
