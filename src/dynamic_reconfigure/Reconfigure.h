@@ -1,7 +1,11 @@
 #ifndef _ROS_SERVICE_Reconfigure_h
 #define _ROS_SERVICE_Reconfigure_h
 #include <stdint.h>
-#include <string.h>
+#ifdef __MACH__
+	#include "String.h"
+#else
+	#include "string.h"
+#endif
 #include <stdlib.h>
 #include "ros/msg.h"
 #include "dynamic_reconfigure/Config.h"

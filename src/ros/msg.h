@@ -37,7 +37,11 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include <string.h>
+#ifdef __MACH__
+	#include "String.h"
+#else
+	#include "string.h"
+#endif
 
 namespace ros
 {
